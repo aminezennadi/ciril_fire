@@ -6,6 +6,7 @@ public class Grid {
     private int rows;
     private int cols;
     private List<List<Integer>> initialOnes;
+    private int propagationPercentage;
 
     public int getRows() {
         return rows;
@@ -29,5 +30,13 @@ public class Grid {
 
     public void setInitialOnes(List<List<Integer>> initialOnes) {
         this.initialOnes = initialOnes;
+    }
+
+    public int getPropagationPercentage() {
+        return propagationPercentage;
+    }
+
+    public void setPropagationPercentage(int propagationPercentage) {
+        this.propagationPercentage = propagationPercentage;
     }
 }

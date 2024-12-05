@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-    <h1 class="text-4xl font-bold mb-4">Dynamic Grid</h1>
+    <h1 class="text-4xl font-bold mb-4">THE FOREST</h1>
 
     <button
       @click="incrementGrid"
@@ -11,11 +11,19 @@
 
     <div v-if="grid.length" class="grid gap-2" :style="{ gridTemplateColumns: `repeat(${cols}, 1fr)` }">
       <div
-        v-for="(cell, index) in flattenedGrid"
-        :key="index"
-        class="flex items-center justify-center w-12 h-12 border bg-gray-200 text-xl font-bold"
+        v-for="(row, rowIndex) in grid"
+        :key="rowIndex"
+        class="grid-row"
       >
-        {{ cell }}
+        <div
+          v-for="(cell, colIndex) in row"
+          :key="colIndex"
+          class="flex items-center justify-center w-12 h-12 border bg-gray-200 text-xl font-bold"
+        >
+          <span v-if="cell === 1">🔥</span>
+          <span v-else-if="cell === 0">🌳</span>
+          <span v-else-if="cell === 2">⬛</span>
+        </div>
       </div>
     </div>
 
@@ -41,8 +49,8 @@ export default {
     };
   },
   computed: {
-    flattenedGrid() {
-      return this.grid.flat();
+    cols() {
+      return this.grid[0]?.length || 0;
     },
   },
   methods: {
@@ -50,8 +58,7 @@ export default {
       try {
         const response = await axios.get("http://localhost:8080/api/runner/grid");
         this.grid = response.data;
-        this.rows = response.data.length;
-        this.cols = response.data[0].length;
+        this.rows = this.grid.length;
       } catch (error) {
         console.error("Error fetching grid:", error);
       }
@@ -75,6 +82,7 @@ export default {
   },
   mounted() {
     this.fetchGrid();
+    this.resetGrid(); // Automatically reset the grid on page load
   },
 };
 </script>
@@ -83,5 +91,8 @@ export default {
 .grid {
   display: grid;
   gap: 10px;
+}
+.block {
+  display: inline-block;
 }
 </style>

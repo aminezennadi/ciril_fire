@@ -7,14 +7,15 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class RunnerService {
 
     private int[][] grid;
     private Grid gridConfig;
+    private int propagationPercentage;
 
     @PostConstruct
     public void init() throws IOException {
@@ -25,6 +26,7 @@ public class RunnerService {
             gridConfig = mapper.readValue(is, Grid.class);
 
             grid = new int[gridConfig.getRows()][gridConfig.getCols()];
+            propagationPercentage = gridConfig.getPropagationPercentage();
 
             for (List<Integer> coord : gridConfig.getInitialOnes()) {
                 int row = coord.get(0);
@@ -43,12 +45,13 @@ public class RunnerService {
     }
 
     public int[][] incrementGrid() {
+        Random random = new Random();
         int[][] newGrid = copyGrid();
 
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
                 if (grid[i][j] == 1) {
-                    incrementAdjacentCells(newGrid, i, j);
+                    incrementAdjacentCells(newGrid, i, j, random);
                 }
             }
         }
@@ -69,16 +72,18 @@ public class RunnerService {
         return grid;
     }
 
-    private void incrementAdjacentCells(int[][] newGrid, int row, int col) {
+    private void incrementAdjacentCells(int[][] newGrid, int row, int col, Random random) {
         int[][] directions = {
-                {-1, 0}, {1, 0}, {0, -1}, {0, 1}
+                {-1, 0}, {1, 0}, {0, -1}, {0, 1} // Haut, Bas, Gauche, Droite
         };
 
         for (int[] direction : directions) {
             int newRow = row + direction[0];
             int newCol = col + direction[1];
             if (isValidCoordinate(newRow, newCol) && newGrid[newRow][newCol] < 2) {
-                newGrid[newRow][newCol]++;
+                if (random.nextInt(100) < propagationPercentage) {
+                    newGrid[newRow][newCol]++;
+                }
             }
         }
 

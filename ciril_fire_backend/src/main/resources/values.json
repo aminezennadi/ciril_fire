@@ -1,11 +1,12 @@
 {
   "rows": 5,
-  "cols": 7,
+  "cols": 5,
   "initialOnes": [
     [0, 0],
     [1, 4],
     [2, 2],
     [4, 5],
     [10, 10]
-  ]
+  ],
+  "propagationPercentage": 30
 }
