@@ -23,7 +23,7 @@ export default {
   methods: {
     async fetchCounter() {
       try {
-        const response = await axios.get('http://localhost:8080/api/counter');
+        const response = await axios.get('http://localhost:8080/api/runner');
         this.counter = response.data;
       } catch (error) {
         console.error('Error fetching counter:', error);
@@ -31,7 +31,7 @@ export default {
     },
     async incrementCounter() {
       try {
-        const response = await axios.post('http://localhost:8080/api/counter/increment');
+        const response = await axios.post('http://localhost:8080/api/runner/increment');
         this.counter = response.data;
       } catch (error) {
         console.error('Error incrementing counter:', error);
@@ -39,7 +39,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchCounter(); // Récupère la valeur initiale du compteur au chargement
+    this.fetchCounter();
   },
 };
 </script>

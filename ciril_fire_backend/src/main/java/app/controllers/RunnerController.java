@@ -3,8 +3,8 @@ package app.controllers;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/counter")
-@CrossOrigin(origins = "http://localhost:5173") // Adresse de votre front-end
+@RequestMapping("/api/runner")
+@CrossOrigin(origins = "http://localhost:5173") // Adresse du front-end
 public class RunnerController {
 
     private int counter = 0;
@@ -16,7 +16,9 @@ public class RunnerController {
 
     @PostMapping("/increment")
     public int incrementCounter() {
-        counter++;
+        if (counter < 2) { // Limite supérieure : 2
+            counter++;
+        }
         return counter;
     }
 }
