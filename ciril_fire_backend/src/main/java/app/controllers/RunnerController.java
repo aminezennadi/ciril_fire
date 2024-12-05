@@ -1,11 +1,13 @@
 package app.controllers;
 
+import app.models.Grid;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/runner")
@@ -16,16 +18,25 @@ public class RunnerController {
 
     private int rows;
     private int cols;
+    private List<List<Integer>> initialOnes;
 
     @PostConstruct
     public void init() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         InputStream is = getClass().getClassLoader().getResourceAsStream("values.json");
         if (is != null) {
-            Values values = mapper.readValue(is, Values.class);
+            Grid values = mapper.readValue(is, Grid.class);
             rows = values.getRows();
             cols = values.getCols();
+            initialOnes = values.getInitialOnes();
             grid = new int[rows][cols];
+            for (List<Integer> coord : initialOnes) {
+                int row = coord.get(0) - 1;
+                int col = coord.get(1) - 1;
+                if (row >= 0 && row < rows && col >= 0 && col < cols) {
+                    grid[row][col] = 1;
+                }
+            }
         } else {
             throw new IllegalStateException("values.json not found in resources");
         }
@@ -55,27 +66,13 @@ public class RunnerController {
                 grid[i][j] = 0;
             }
         }
+        for (List<Integer> coord : initialOnes) {
+            int row = coord.get(0) - 1;
+            int col = coord.get(1) - 1;
+            if (row >= 0 && row < rows && col >= 0 && col < cols) {
+                grid[row][col] = 1;
+            }
+        }
         return grid;
-    }
-
-    private static class Values {
-        private int rows;
-        private int cols;
-
-        public int getRows() {
-            return rows;
-        }
-
-        public void setRows(int rows) {
-            this.rows = rows;
-        }
-
-        public int getCols() {
-            return cols;
-        }
-
-        public void setCols(int cols) {
-            this.cols = cols;
-        }
     }
 }
