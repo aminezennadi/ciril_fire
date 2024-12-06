@@ -90,8 +90,10 @@ public class RunnerService {
                 .forEach(coords -> newGrid[coords[0]][coords[1]]++); // Increment
 
 
-        // increment the current cell
-        newGrid[row][col]++;
+        // 2 is the maximum state
+        if (newGrid[row][col] < 2) {
+            newGrid[row][col]++;
+        }
     }
 
     private boolean isValidCoordinate(int row, int col) {
