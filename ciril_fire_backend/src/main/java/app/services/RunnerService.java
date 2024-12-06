@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 /*
  *  The service of the simulation
@@ -22,7 +24,6 @@ public class RunnerService {
 
     private int[][] grid;
     private GridConfig gridConfig;
-    private int propagationPercentage;
 
     @PostConstruct
     public void init() throws IOException {
@@ -35,16 +36,10 @@ public class RunnerService {
             gridConfig = mapper.readValue(is, GridConfig.class);
 
             grid = new int[gridConfig.getRows()][gridConfig.getCols()];
-            propagationPercentage = gridConfig.getPropagationPercentage();
 
             // Initialisation of the grid with the initials Fires
-            for (List<Integer> coord : gridConfig.getInitialOnes()) {
-                int row = coord.get(0);
-                int col = coord.get(1);
-                if (isValidCoordinate(row, col)) {
-                    grid[row][col] = 1;
-                }
-            }
+            resetGrid();
+
         } else {
             throw new IllegalStateException("values.json not found in resources");
         }
@@ -59,27 +54,22 @@ public class RunnerService {
         // Create a results Grid
         int[][] newGrid = copyGrid();
 
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                if (grid[i][j] == 1) {
-                    incrementAdjacentCells(newGrid, i, j, random);
-                }
-            }
-        }
+        IntStream.range(0, grid.length) // Stream over row indices
+                .forEach(i -> IntStream.range(0, grid[i].length)
+                        .filter(j -> grid[i][j] == 1) // Process only on fire cells (1)
+                        .forEach(j -> incrementAdjacentCells(newGrid, i, j, random))
+                );
 
         grid = newGrid;
+
         return grid;
     }
 
     public int[][] resetGrid() {
         grid = new int[gridConfig.getRows()][gridConfig.getCols()];
-        for (List<Integer> coord : gridConfig.getInitialOnes()) {
-            int row = coord.get(0);
-            int col = coord.get(1);
-            if (isValidCoordinate(row, col)) {
-                grid[row][col] = 1;
-            }
-        }
+        gridConfig.getInitialOnes().stream()
+                .filter(coord -> isValidCoordinate(coord.get(0), coord.get(1))) // Filter valid coordinates
+                .forEach(coord -> grid[coord.get(0)][coord.get(1)] = 1);
         return grid;
     }
 
@@ -88,25 +78,20 @@ public class RunnerService {
                 {-1, 0}, {1, 0}, {0, -1}, {0, 1} // up, down, left, right
         };
 
-        for (int[] direction : directions) {
-            int newRow = row + direction[0];
-            int newCol = col + direction[1];
-            // if the values are outside of the grid, they will be ignored
-            if (isValidCoordinate(newRow, newCol) && newGrid[newRow][newCol] < 2) {
-                /*
-                 * A random number between 0 and 100 is generated for each adjacent cell
-                 * The generated number is compared with the specified propagation percentage
-                 */
-                if (random.nextInt(100) < propagationPercentage) {
-                    newGrid[newRow][newCol]++;
-                }
-            }
-        }
+        /*
+         * A random number between 0 and 100 is generated for each adjacent cell
+         * The generated number is compared with the specified propagation percentage
+         */
+        Arrays.stream(directions)
+                .map(direction -> new int[] {row + direction[0], col + direction[1]})
+                .filter(coords -> isValidCoordinate(coords[0], coords[1]))
+                .filter(coords -> newGrid[coords[0]][coords[1]] < 2) // Filter cells with value less than 2 (not ashes)
+                .filter(coords -> random.nextInt(100) < gridConfig.getPropagationPercentage())
+                .forEach(coords -> newGrid[coords[0]][coords[1]]++); // Increment
 
-        // 2 is the maximum state
-        if (newGrid[row][col] < 2) {
-            newGrid[row][col]++;
-        }
+
+        // increment the current cell
+        newGrid[row][col]++;
     }
 
     private boolean isValidCoordinate(int row, int col) {
@@ -115,9 +100,10 @@ public class RunnerService {
 
     private int[][] copyGrid() {
         int[][] newGrid = new int[gridConfig.getRows()][gridConfig.getCols()];
-        for (int i = 0; i < grid.length; i++) {
-            System.arraycopy(grid[i], 0, newGrid[i], 0, grid[i].length);
-        }
+
+        IntStream.range(0, grid.length)
+                .forEach(i -> System.arraycopy(grid[i], 0, newGrid[i], 0, grid[i].length));
+
         return newGrid;
     }
 }
