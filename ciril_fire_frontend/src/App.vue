@@ -20,6 +20,7 @@
           :key="colIndex"
           class="flex items-center justify-center w-12 h-12 border bg-gray-200 text-xl font-bold"
         >
+          <!-- Replace the values with icons-->
           <span v-if="cell === 1">🔥</span>
           <span v-else-if="cell === 0">🌳</span>
           <span v-else-if="cell === 2">⬛</span>

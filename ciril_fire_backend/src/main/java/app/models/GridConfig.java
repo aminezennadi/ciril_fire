@@ -2,10 +2,13 @@ package app.models;
 
 import java.util.List;
 
-public class Grid {
+/*
+ *  The Grid Model
+ */
+public class GridConfig {
     private int rows;
     private int cols;
-    private List<List<Integer>> initialOnes;
+    private List<List<Integer>> initialOnes; // The list of the initials fires
     private int propagationPercentage;
 
     public int getRows() {

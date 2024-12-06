@@ -1,6 +1,6 @@
 package app.services;
 
-import app.models.Grid;
+import app.models.GridConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
@@ -10,11 +10,18 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Random;
 
+/*
+ *  The service of the simulation
+ *  There are 3 states in the grid :
+ *  0 = Tree
+ *  1 = Fire
+ *  2 = Ashes
+ */
 @Service
 public class RunnerService {
 
     private int[][] grid;
-    private Grid gridConfig;
+    private GridConfig gridConfig;
     private int propagationPercentage;
 
     @PostConstruct
@@ -23,11 +30,14 @@ public class RunnerService {
         InputStream is = getClass().getClassLoader().getResourceAsStream("values.json");
 
         if (is != null) {
-            gridConfig = mapper.readValue(is, Grid.class);
+
+            // Mapping of the json values in the Grid Model
+            gridConfig = mapper.readValue(is, GridConfig.class);
 
             grid = new int[gridConfig.getRows()][gridConfig.getCols()];
             propagationPercentage = gridConfig.getPropagationPercentage();
 
+            // Initialisation of the grid with the initials Fires
             for (List<Integer> coord : gridConfig.getInitialOnes()) {
                 int row = coord.get(0);
                 int col = coord.get(1);
@@ -46,6 +56,7 @@ public class RunnerService {
 
     public int[][] incrementGrid() {
         Random random = new Random();
+        // Create a results Grid
         int[][] newGrid = copyGrid();
 
         for (int i = 0; i < grid.length; i++) {
@@ -74,19 +85,25 @@ public class RunnerService {
 
     private void incrementAdjacentCells(int[][] newGrid, int row, int col, Random random) {
         int[][] directions = {
-                {-1, 0}, {1, 0}, {0, -1}, {0, 1} // Haut, Bas, Gauche, Droite
+                {-1, 0}, {1, 0}, {0, -1}, {0, 1} // up, down, left, right
         };
 
         for (int[] direction : directions) {
             int newRow = row + direction[0];
             int newCol = col + direction[1];
+            // if the values are outside of the grid, they will be ignored
             if (isValidCoordinate(newRow, newCol) && newGrid[newRow][newCol] < 2) {
+                /*
+                 * A random number between 0 and 100 is generated for each adjacent cell
+                 * The generated number is compared with the specified propagation percentage
+                 */
                 if (random.nextInt(100) < propagationPercentage) {
                     newGrid[newRow][newCol]++;
                 }
             }
         }
 
+        // 2 is the maximum state
         if (newGrid[row][col] < 2) {
             newGrid[row][col]++;
         }

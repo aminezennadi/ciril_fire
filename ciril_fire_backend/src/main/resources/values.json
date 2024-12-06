@@ -1,6 +1,6 @@
 {
-  "rows": 5,
-  "cols": 5,
+  "rows": 6,
+  "cols": 7,
   "initialOnes": [
     [0, 0],
     [1, 4],
